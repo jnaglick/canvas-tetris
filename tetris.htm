@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>canvas tetris</title>
+		<script src="jquery.min.js"></script>
+		<style>
+			canvas {
+				visibility: hidden;
+			}
+			
+			canvas#c {
+				visibility: visible;
+				border: 1px solid black;
+			}
+			
+			#controls {
+				float:right;
+				width: 200px;
+				text-align: center;
+				border: 1px solid black;
+				padding: 2px;
+			}
+		</style>
+	</head>
+	<body>
+		<canvas id="c"></canvas>
+		<div id="controls">
+			<a id="control_pauseToggle" href="#"></a>
+		</div>
+	</body>
+	<script type="text/javascript">
+		const CANVAS_PIXEL_WIDTH = 200,
+			  CANVAS_PIXEL_HEIGHT = 300,
+			  MONOMINO_WIDTH = 20,
+			  MONOMINO_PIXEL_HEIGHT = 20,
+			  GAMETICK_SPEED = 500 //ms
+		;
+		
+		var Game = (function() {
+			const GAMESTATE_PAUSED = 0,
+				  GAMESTATE_PLAYING = 1,
+				  MSTATE_OFF = 0,
+				  MSTATE_ON = 1,
+				  MSTATE_P = 2,
+				  PLAYER_STARTX = 4,
+				  PLAYER_STARTY = 0
+			;
+			
+			var gamestate = GAMESTATE_PAUSED, // game starts paused
+				// width/height of Game is in units of monominoes
+				width = CANVAS_PIXEL_WIDTH / MONOMINO_WIDTH,
+				height = CANVAS_PIXEL_HEIGHT / MONOMINO_PIXEL_HEIGHT,
+				monominoes = new Array(width * height),
+				player = {x: NaN, y: NaN}
+			;
+			
+			function setXYoff(x, y) { monominoes[(y * width) + x] = MSTATE_OFF; }
+			function setXYon(x, y) { monominoes[(y * width) + x] = MSTATE_ON; }
+			function setXYp(x, y) { monominoes[(y * width) + x] = MSTATE_P; }
+			function isXYoff(x, y) { return monominoes[(y * width) + x] == MSTATE_OFF; }
+			function isXYon(x, y) { return monominoes[(y * width) + x] == MSTATE_ON; }
+			
+			function resetPlayerPos() {
+				player.x = PLAYER_STARTX;
+				player.y = PLAYER_STARTY;
+				setXYp(player.x, player.y);
+			}
+			
+			function playerMoveIsValid(dX, dY) {
+				return player.x + dX >= 0 && player.x + dX <= width-1 &&
+					   player.y + dY >= 0 && player.y + dY <= height-1 &&
+					   isXYoff(player.x + dX, player.y + dY);
+				
+			}
+			
+			function movePlayer(dX, dY) {
+				setXYoff(player.x, player.y);
+				player.x += dX;
+				player.y += dY;
+				setXYp(player.x, player.y);
+			}
+			
+			function movePlayerDown() {				
+				if (playerMoveIsValid(0, 1)) {
+					movePlayer(0, 1);
+				} else {
+					setXYon(player.x, player.y); //cement player
+					// do overlap (gameover) check
+					resetPlayerPos();
+				}
+			}
+
+			(function() { // init
+				for (var i = 0; i < monominoes.length; i++) {
+					monominoes[i] = MSTATE_OFF;
+				}
+				resetPlayerPos();
+			})();
+
+			return {
+				width: function() {return width;},
+				height: function() {return height;},
+
+				isXYon: function(x, y) {
+					return monominoes[(y * width) + x] == MSTATE_ON;
+				},
+
+				isXYplayer: function(x, y) {
+					return monominoes[(y * width) + x] == MSTATE_P;
+				},
+
+				isPaused: function() {
+					return gamestate == GAMESTATE_PAUSED;
+				},
+
+				pause: function() {
+					if (gamestate == GAMESTATE_PLAYING) {
+						gamestate = GAMESTATE_PAUSED;
+					} 
+				},
+
+				unpause: function() {
+					if (gamestate == GAMESTATE_PAUSED) {
+						gamestate = GAMESTATE_PLAYING;
+					} 
+				},
+
+				tick: function() {
+					if (Game.isPaused()) return;
+					
+					movePlayerDown();
+					updateCanvas();
+				},
+				
+				playerAction_Left: function() {
+					if (Game.isPaused()) return;
+					
+					if (playerMoveIsValid(-1, 0)) {
+						movePlayer(-1, 0);
+						updateCanvas();
+					}
+				},
+				
+				playerAction_Right: function() {
+					if (Game.isPaused()) return;
+					
+					if (playerMoveIsValid(1, 0)) {
+						movePlayer(1, 0);
+						updateCanvas();
+					}
+				},
+				
+				playerAction_Down: function() {
+					if (Game.isPaused()) return;
+					
+					movePlayerDown();
+					updateCanvas();
+				}
+			};
+		})();
+
+		function updateCanvas() {
+			var c = document.getElementById("c").getContext('2d');
+			for (var x = 0; x < Game.width(); x++) {
+				for (var y = 0; y < Game.height(); y++) {
+					if (Game.isXYon(x, y)) {
+						c.fillStyle = "#000000";
+						c.fillRect(x * MONOMINO_WIDTH, y * MONOMINO_PIXEL_HEIGHT, 
+								   MONOMINO_WIDTH, MONOMINO_PIXEL_HEIGHT);
+					} else if (Game.isXYplayer(x, y)) {
+						c.fillStyle = "#FF0000";
+						c.fillRect(x * MONOMINO_WIDTH, y * MONOMINO_PIXEL_HEIGHT, 
+								   MONOMINO_WIDTH, MONOMINO_PIXEL_HEIGHT);
+					} else {
+						c.clearRect(x * MONOMINO_WIDTH, y * MONOMINO_PIXEL_HEIGHT, 
+									MONOMINO_WIDTH, MONOMINO_PIXEL_HEIGHT);
+					}
+				}
+			}
+		}
+		
+		function gameloop() {
+			Game.tick();
+			setTimeout("gameloop()", GAMETICK_SPEED);
+		}
+		
+		function togglePause() {
+			if (Game.isPaused()) {
+				$('#control_pauseToggle').text('pause');
+				Game.unpause();
+			} else {
+				$('#control_pauseToggle').text('play');
+				Game.pause();
+			}
+		}
+
+		function handleKeypress(e) {
+			if (e.which == 115) {
+				Game.playerAction_Down();
+			}
+			if (e.which == 97) {
+				Game.playerAction_Left();
+			}
+			if (e.which == 100) {		
+				Game.playerAction_Right();
+			}		
+		}
+
+		function init() {			
+			document.getElementById("c").width = CANVAS_PIXEL_WIDTH;
+			document.getElementById("c").height = CANVAS_PIXEL_HEIGHT;
+			$('body').keypress(handleKeypress);
+			$('#control_pauseToggle').text('start').click(togglePause);
+			gameloop();
+		}
+
+		init();
+	</script>
+</html>
