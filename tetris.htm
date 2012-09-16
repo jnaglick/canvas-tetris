@@ -31,34 +31,34 @@
 	<script type="text/javascript">
 		const CANVAS_PIXEL_WIDTH = 200,
 			  CANVAS_PIXEL_HEIGHT = 300,
-			  MONOMINO_PIXEL_WIDTH = 20,
-			  MONOMINO_PIXEL_HEIGHT = 20,
+			  CELL_PIXEL_WIDTH = 20,
+			  CELL_PIXEL_HEIGHT = 20,
 			  GAMETICK_SPEED = 500 //ms
 		;
 		
 		var Game = (function() {
 			const GAMESTATE_PAUSED = 0,
 				  GAMESTATE_PLAYING = 1,
-				  MSTATE_OFF = 0,
-				  MSTATE_ON = 1,
-				  MSTATE_P = 2,
+				  CELL_STATE_OFF = 0,
+				  CELL_STATE_ON = 1,
+				  CELL_STATE_P = 2,
 				  PLAYER_STARTX = 4,
 				  PLAYER_STARTY = 0
 			;
 			
 			var gamestate = GAMESTATE_PAUSED, // game starts paused
-				// width/height of Game is in units of monominoes
-				width = CANVAS_PIXEL_WIDTH / MONOMINO_PIXEL_WIDTH,
-				height = CANVAS_PIXEL_HEIGHT / MONOMINO_PIXEL_HEIGHT,
-				monominoes = new Array(width * height),
+				// width/height of Game is in units of cells
+				width = CANVAS_PIXEL_WIDTH / CELL_PIXEL_WIDTH,
+				height = CANVAS_PIXEL_HEIGHT / CELL_PIXEL_HEIGHT,
+				cells = new Array(width * height),
 				player = {x: NaN, y: NaN}
 			;
 			
-			function setXYoff(x, y) { monominoes[(y * width) + x] = MSTATE_OFF; }
-			function setXYon(x, y) { monominoes[(y * width) + x] = MSTATE_ON; }
-			function setXYp(x, y) { monominoes[(y * width) + x] = MSTATE_P; }
-			function isXYoff(x, y) { return monominoes[(y * width) + x] == MSTATE_OFF; }
-			function isXYon(x, y) { return monominoes[(y * width) + x] == MSTATE_ON; }
+			function setXYoff(x, y) { cells[(y * width) + x] = CELL_STATE_OFF; }
+			function setXYon(x, y) { cells[(y * width) + x] = CELL_STATE_ON; }
+			function setXYp(x, y) { cells[(y * width) + x] = CELL_STATE_P; }
+			function isXYoff(x, y) { return cells[(y * width) + x] == CELL_STATE_OFF; }
+			function isXYon(x, y) { return cells[(y * width) + x] == CELL_STATE_ON; }
 			
 			function resetPlayerPos() {
 				player.x = PLAYER_STARTX;
@@ -91,8 +91,8 @@
 			}
 
 			(function() { // init
-				for (var i = 0; i < monominoes.length; i++) {
-					monominoes[i] = MSTATE_OFF;
+				for (var i = 0; i < cells.length; i++) {
+					cells[i] = CELL_STATE_OFF;
 				}
 				resetPlayerPos();
 			})();
@@ -102,11 +102,11 @@
 				height: function() {return height;},
 
 				isXYon: function(x, y) {
-					return monominoes[(y * width) + x] == MSTATE_ON;
+					return cells[(y * width) + x] == CELL_STATE_ON;
 				},
 
 				isXYplayer: function(x, y) {
-					return monominoes[(y * width) + x] == MSTATE_P;
+					return cells[(y * width) + x] == CELL_STATE_P;
 				},
 
 				isPaused: function() {
@@ -165,15 +165,15 @@
 				for (var y = 0; y < Game.height(); y++) {
 					if (Game.isXYon(x, y)) {
 						c.fillStyle = "#000000";
-						c.fillRect(x * MONOMINO_PIXEL_WIDTH, y * MONOMINO_PIXEL_HEIGHT, 
-								   MONOMINO_PIXEL_WIDTH, MONOMINO_PIXEL_HEIGHT);
+						c.fillRect(x * CELL_PIXEL_WIDTH, y * CELL_PIXEL_HEIGHT, 
+								   CELL_PIXEL_WIDTH, CELL_PIXEL_HEIGHT);
 					} else if (Game.isXYplayer(x, y)) {
 						c.fillStyle = "#FF0000";
-						c.fillRect(x * MONOMINO_PIXEL_WIDTH, y * MONOMINO_PIXEL_HEIGHT, 
-								   MONOMINO_PIXEL_WIDTH, MONOMINO_PIXEL_HEIGHT);
+						c.fillRect(x * CELL_PIXEL_WIDTH, y * CELL_PIXEL_HEIGHT, 
+								   CELL_PIXEL_WIDTH, CELL_PIXEL_HEIGHT);
 					} else {
-						c.clearRect(x * MONOMINO_PIXEL_WIDTH, y * MONOMINO_PIXEL_HEIGHT, 
-									MONOMINO_PIXEL_WIDTH, MONOMINO_PIXEL_HEIGHT);
+						c.clearRect(x * CELL_PIXEL_WIDTH, y * CELL_PIXEL_HEIGHT, 
+									CELL_PIXEL_WIDTH, CELL_PIXEL_HEIGHT);
 					}
 				}
 			}
