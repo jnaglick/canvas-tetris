@@ -33,7 +33,7 @@
 			  CANVAS_PIXEL_HEIGHT = 300,
 			  CELL_PIXEL_WIDTH = 20,
 			  CELL_PIXEL_HEIGHT = 20,
-			  GAMETICK_SPEED = 500 //ms
+			  GAMETICK_SPEED = 500
 		;
 		
 		var Game = (function() {
@@ -43,7 +43,21 @@
 				  CELL_STATE_ON = 1,
 				  CELL_STATE_P = 2,
 				  PLAYER_STARTX = 4,
-				  PLAYER_STARTY = 0
+				  PLAYER_STARTY = 0,
+				  TETRIMINO_O = [[0, 0], [0, 1], [1, 0], [1, 1]],
+				  TETRIMINO_I = [[0, 0], [0, 1], [0, 2], [0, 3]],
+				  TETRIMINO_T = [[0, 0], [1, 0], [2, 0], [1, 1]],
+				  TETRIMINO_L = [[0, 0], [0, 1], [0, 2], [1, 2]],
+				  TETRIMINO_J = [[1, 0], [1, 1], [1, 2], [0, 2]],
+				  TETRIMINO_S = [[0, 0], [0, 1], [1, 1], [1, 2]],
+				  TETRIMINO_Z = [[1, 0], [0, 1], [1, 1], [0, 2]]
+				  TETRIMINOS = [TETRIMINO_O, 
+								TETRIMINO_I, 
+								TETRIMINO_T, 
+								TETRIMINO_L, 
+								TETRIMINO_J, 
+								TETRIMINO_S, 
+								TETRIMINO_Z]
 			;
 			
 			var gamestate = GAMESTATE_PAUSED, // game starts paused
@@ -51,42 +65,68 @@
 				width = CANVAS_PIXEL_WIDTH / CELL_PIXEL_WIDTH,
 				height = CANVAS_PIXEL_HEIGHT / CELL_PIXEL_HEIGHT,
 				cells = new Array(width * height),
-				player = {x: NaN, y: NaN}
+				// player object describes what cells it occupied (a cardinal x,y and shape (tetromino))
+				player = {x: NaN, y: NaN, shape: []}
 			;
 			
 			function setXYoff(x, y) { cells[(y * width) + x] = CELL_STATE_OFF; }
 			function setXYon(x, y) { cells[(y * width) + x] = CELL_STATE_ON; }
 			function setXYp(x, y) { cells[(y * width) + x] = CELL_STATE_P; }
-			function isXYoff(x, y) { return cells[(y * width) + x] == CELL_STATE_OFF; }
 			function isXYon(x, y) { return cells[(y * width) + x] == CELL_STATE_ON; }
+			function isXYp(x, y) { return cells[(y * width) + x] == CELL_STATE_P; }
 			
-			function resetPlayerPos() {
-				player.x = PLAYER_STARTX;
-				player.y = PLAYER_STARTY;
-				setXYp(player.x, player.y);
+			function randomTetrimino() {
+				return TETRIMINOS[Math.floor(Math.random()*TETRIMINOS.length)];
 			}
 			
-			function playerMoveIsValid(dX, dY) {
-				return player.x + dX >= 0 && player.x + dX <= width-1 &&
-					   player.y + dY >= 0 && player.y + dY <= height-1 &&
-					   isXYoff(player.x + dX, player.y + dY);
-				
+			function resetPlayer() {
+				player.x = PLAYER_STARTX;
+				player.y = PLAYER_STARTY;
+				player.shape = randomTetrimino();
+				for (var i = 0; i < player.shape.length; i++) {
+					setXYp(player.x + player.shape[i][0], player.y + player.shape[i][1]);
+				}
+			}
+			
+			function cementPlayer() {
+				for (var i = 0; i < player.shape.length; i++) {
+					setXYon(player.x + player.shape[i][0], player.y + player.shape[i][1]);
+				}
+			}
+			
+			function coordIsValid(x, y) {
+				return x >= 0 && x <= width - 1 && y >= 0 && y <= height - 1;
+			}
+			
+			function playerMoveIsValid(dX, dY) {				
+				for (var i = 0; i < player.shape.length; i++) {
+					var x = player.x + player.shape[i][0] + dX,
+						y = player.y + player.shape[i][1] + dY;
+					if (!coordIsValid(x, y) || isXYon(x, y)) {
+						return false;
+					}
+				}
+				return true;
 			}
 			
 			function movePlayer(dX, dY) {
-				setXYoff(player.x, player.y);
+				for (var i = 0; i < player.shape.length; i++) {
+					setXYoff(player.x + player.shape[i][0], player.y + player.shape[i][1]);
+				}
 				player.x += dX;
 				player.y += dY;
-				setXYp(player.x, player.y);
+				for (var i = 0; i < player.shape.length; i++) {
+					setXYp(player.x + player.shape[i][0], player.y + player.shape[i][1]);
+				}
 			}
 			
 			function movePlayerDown() {				
 				if (playerMoveIsValid(0, 1)) {
 					movePlayer(0, 1);
 				} else {
-					setXYon(player.x, player.y); //cement player
+					cementPlayer();
 					// do overlap (gameover) check
-					resetPlayerPos();
+					resetPlayer();
 				}
 			}
 
@@ -94,7 +134,8 @@
 				for (var i = 0; i < cells.length; i++) {
 					cells[i] = CELL_STATE_OFF;
 				}
-				resetPlayerPos();
+				resetPlayer();
+				console.log(player);
 			})();
 
 			return {
@@ -102,11 +143,11 @@
 				height: function() {return height;},
 
 				isXYon: function(x, y) {
-					return cells[(y * width) + x] == CELL_STATE_ON;
+					return isXYon(x, y);
 				},
 
 				isXYplayer: function(x, y) {
-					return cells[(y * width) + x] == CELL_STATE_P;
+					return isXYp(x, y);
 				},
 
 				isPaused: function() {
