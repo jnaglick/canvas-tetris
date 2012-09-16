@@ -31,7 +31,7 @@
 	<script type="text/javascript">
 		const CANVAS_PIXEL_WIDTH = 200,
 			  CANVAS_PIXEL_HEIGHT = 300,
-			  MONOMINO_WIDTH = 20,
+			  MONOMINO_PIXEL_WIDTH = 20,
 			  MONOMINO_PIXEL_HEIGHT = 20,
 			  GAMETICK_SPEED = 500 //ms
 		;
@@ -48,7 +48,7 @@
 			
 			var gamestate = GAMESTATE_PAUSED, // game starts paused
 				// width/height of Game is in units of monominoes
-				width = CANVAS_PIXEL_WIDTH / MONOMINO_WIDTH,
+				width = CANVAS_PIXEL_WIDTH / MONOMINO_PIXEL_WIDTH,
 				height = CANVAS_PIXEL_HEIGHT / MONOMINO_PIXEL_HEIGHT,
 				monominoes = new Array(width * height),
 				player = {x: NaN, y: NaN}
@@ -165,15 +165,15 @@
 				for (var y = 0; y < Game.height(); y++) {
 					if (Game.isXYon(x, y)) {
 						c.fillStyle = "#000000";
-						c.fillRect(x * MONOMINO_WIDTH, y * MONOMINO_PIXEL_HEIGHT, 
-								   MONOMINO_WIDTH, MONOMINO_PIXEL_HEIGHT);
+						c.fillRect(x * MONOMINO_PIXEL_WIDTH, y * MONOMINO_PIXEL_HEIGHT, 
+								   MONOMINO_PIXEL_WIDTH, MONOMINO_PIXEL_HEIGHT);
 					} else if (Game.isXYplayer(x, y)) {
 						c.fillStyle = "#FF0000";
-						c.fillRect(x * MONOMINO_WIDTH, y * MONOMINO_PIXEL_HEIGHT, 
-								   MONOMINO_WIDTH, MONOMINO_PIXEL_HEIGHT);
+						c.fillRect(x * MONOMINO_PIXEL_WIDTH, y * MONOMINO_PIXEL_HEIGHT, 
+								   MONOMINO_PIXEL_WIDTH, MONOMINO_PIXEL_HEIGHT);
 					} else {
-						c.clearRect(x * MONOMINO_WIDTH, y * MONOMINO_PIXEL_HEIGHT, 
-									MONOMINO_WIDTH, MONOMINO_PIXEL_HEIGHT);
+						c.clearRect(x * MONOMINO_PIXEL_WIDTH, y * MONOMINO_PIXEL_HEIGHT, 
+									MONOMINO_PIXEL_WIDTH, MONOMINO_PIXEL_HEIGHT);
 					}
 				}
 			}
