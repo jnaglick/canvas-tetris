@@ -83,13 +83,13 @@
 				player.x = PLAYER_STARTX;
 				player.y = PLAYER_STARTY;
 				player.shape = randomTetrimino();
-				for (var i = 0; i < player.shape.length; i++) {
+				for (var i in player.shape) {
 					setXYp(player.x + player.shape[i][0], player.y + player.shape[i][1]);
 				}
 			}
 			
 			function cementPlayer() {
-				for (var i = 0; i < player.shape.length; i++) {
+				for (var i in player.shape) {
 					setXYon(player.x + player.shape[i][0], player.y + player.shape[i][1]);
 				}
 			}
@@ -99,7 +99,7 @@
 			}
 			
 			function playerMoveIsValid(dX, dY) {				
-				for (var i = 0; i < player.shape.length; i++) {
+				for (var i in player.shape) {
 					var x = player.x + player.shape[i][0] + dX,
 						y = player.y + player.shape[i][1] + dY;
 					if (!coordIsValid(x, y) || isXYon(x, y)) {
@@ -110,12 +110,12 @@
 			}
 			
 			function movePlayer(dX, dY) {
-				for (var i = 0; i < player.shape.length; i++) {
+				for (var i in player.shape) {
 					setXYoff(player.x + player.shape[i][0], player.y + player.shape[i][1]);
 				}
 				player.x += dX;
 				player.y += dY;
-				for (var i = 0; i < player.shape.length; i++) {
+				for (var i in player.shape) {
 					setXYp(player.x + player.shape[i][0], player.y + player.shape[i][1]);
 				}
 			}
@@ -135,7 +135,6 @@
 					cells[i] = CELL_STATE_OFF;
 				}
 				resetPlayer();
-				console.log(player);
 			})();
 
 			return {
