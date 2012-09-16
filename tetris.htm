@@ -1,259 +1,259 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<title>canvas tetris</title>
-		<script src="jquery.min.js"></script>
-		<style>
-			canvas {
-				visibility: hidden;
-			}
-			
-			canvas#c {
-				visibility: visible;
-				border: 1px solid black;
-			}
-			
-			#controls {
-				float:right;
-				width: 200px;
-				text-align: center;
-				border: 1px solid black;
-				padding: 2px;
-			}
-		</style>
-	</head>
-	<body>
-		<canvas id="c"></canvas>
-		<div id="controls">
-			<a id="control_pauseToggle" href="#"></a>
-		</div>
-	</body>
-	<script type="text/javascript">
-		const CANVAS_PIXEL_WIDTH = 200,
-			  CANVAS_PIXEL_HEIGHT = 300,
-			  CELL_PIXEL_WIDTH = 20,
-			  CELL_PIXEL_HEIGHT = 20,
-			  GAMETICK_SPEED = 500
-		;
-		
-		var Game = (function() {
-			const GAMESTATE_PAUSED = 0,
-				  GAMESTATE_PLAYING = 1,
-				  CELL_STATE_OFF = 0,
-				  CELL_STATE_ON = 1,
-				  CELL_STATE_P = 2,
-				  PLAYER_STARTX = 4,
-				  PLAYER_STARTY = 0,
-				  TETRIMINO_O = [[0, 0], [0, 1], [1, 0], [1, 1]],
-				  TETRIMINO_I = [[0, 0], [0, 1], [0, 2], [0, 3]],
-				  TETRIMINO_T = [[0, 0], [1, 0], [2, 0], [1, 1]],
-				  TETRIMINO_L = [[0, 0], [0, 1], [0, 2], [1, 2]],
-				  TETRIMINO_J = [[1, 0], [1, 1], [1, 2], [0, 2]],
-				  TETRIMINO_S = [[0, 0], [0, 1], [1, 1], [1, 2]],
-				  TETRIMINO_Z = [[1, 0], [0, 1], [1, 1], [0, 2]]
-				  TETRIMINOS = [TETRIMINO_O, 
-								TETRIMINO_I, 
-								TETRIMINO_T, 
-								TETRIMINO_L, 
-								TETRIMINO_J, 
-								TETRIMINO_S, 
-								TETRIMINO_Z]
-			;
-			
-			var gamestate = GAMESTATE_PAUSED, // game starts paused
-				// width/height of Game is in units of cells
-				width = CANVAS_PIXEL_WIDTH / CELL_PIXEL_WIDTH,
-				height = CANVAS_PIXEL_HEIGHT / CELL_PIXEL_HEIGHT,
-				cells = new Array(width * height),
-				// player object describes what cells it occupied (a cardinal x,y and shape (tetromino))
-				player = {x: NaN, y: NaN, shape: []}
-			;
-			
-			function setXYoff(x, y) { cells[(y * width) + x] = CELL_STATE_OFF; }
-			function setXYon(x, y) { cells[(y * width) + x] = CELL_STATE_ON; }
-			function setXYp(x, y) { cells[(y * width) + x] = CELL_STATE_P; }
-			function isXYon(x, y) { return cells[(y * width) + x] == CELL_STATE_ON; }
-			function isXYp(x, y) { return cells[(y * width) + x] == CELL_STATE_P; }
-			
-			function randomTetrimino() {
-				return TETRIMINOS[Math.floor(Math.random()*TETRIMINOS.length)];
-			}
-			
-			function resetPlayer() {
-				player.x = PLAYER_STARTX;
-				player.y = PLAYER_STARTY;
-				player.shape = randomTetrimino();
-				for (var i in player.shape) {
-					setXYp(player.x + player.shape[i][0], player.y + player.shape[i][1]);
-				}
-			}
-			
-			function cementPlayer() {
-				for (var i in player.shape) {
-					setXYon(player.x + player.shape[i][0], player.y + player.shape[i][1]);
-				}
-			}
-			
-			function coordIsValid(x, y) {
-				return x >= 0 && x <= width - 1 && y >= 0 && y <= height - 1;
-			}
-			
-			function playerMoveIsValid(dX, dY) {				
-				for (var i in player.shape) {
-					var x = player.x + player.shape[i][0] + dX,
-						y = player.y + player.shape[i][1] + dY;
-					if (!coordIsValid(x, y) || isXYon(x, y)) {
-						return false;
-					}
-				}
-				return true;
-			}
-			
-			function movePlayer(dX, dY) {
-				for (var i in player.shape) {
-					setXYoff(player.x + player.shape[i][0], player.y + player.shape[i][1]);
-				}
-				player.x += dX;
-				player.y += dY;
-				for (var i in player.shape) {
-					setXYp(player.x + player.shape[i][0], player.y + player.shape[i][1]);
-				}
-			}
-			
-			function movePlayerDown() {				
-				if (playerMoveIsValid(0, 1)) {
-					movePlayer(0, 1);
-				} else {
-					cementPlayer();
-					// do overlap (gameover) check
-					resetPlayer();
-				}
-			}
+    <head>
+        <title>canvas tetris</title>
+        <script src="jquery.min.js"></script>
+        <style>
+            canvas {
+                visibility: hidden;
+            }
+            
+            canvas#c {
+                visibility: visible;
+                border: 1px solid black;
+            }
+            
+            #controls {
+                float:right;
+                width: 200px;
+                text-align: center;
+                border: 1px solid black;
+                padding: 2px;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="c"></canvas>
+        <div id="controls">
+            <a id="control_pauseToggle" href="#"></a>
+        </div>
+    </body>
+    <script type="text/javascript">
+        const CANVAS_PIXEL_WIDTH = 200,
+              CANVAS_PIXEL_HEIGHT = 300,
+              CELL_PIXEL_WIDTH = 20,
+              CELL_PIXEL_HEIGHT = 20,
+              GAMETICK_SPEED = 500
+        ;
+        
+        var Game = (function() {
+            const GAMESTATE_PAUSED = 0,
+                  GAMESTATE_PLAYING = 1,
+                  CELL_STATE_OFF = 0,
+                  CELL_STATE_ON = 1,
+                  CELL_STATE_P = 2,
+                  PLAYER_STARTX = 4,
+                  PLAYER_STARTY = 0,
+                  TETRIMINO_O = [[0, 0], [0, 1], [1, 0], [1, 1]],
+                  TETRIMINO_I = [[0, 0], [0, 1], [0, 2], [0, 3]],
+                  TETRIMINO_T = [[0, 0], [1, 0], [2, 0], [1, 1]],
+                  TETRIMINO_L = [[0, 0], [0, 1], [0, 2], [1, 2]],
+                  TETRIMINO_J = [[1, 0], [1, 1], [1, 2], [0, 2]],
+                  TETRIMINO_S = [[0, 0], [0, 1], [1, 1], [1, 2]],
+                  TETRIMINO_Z = [[1, 0], [0, 1], [1, 1], [0, 2]]
+                  TETRIMINOS = [TETRIMINO_O, 
+                                TETRIMINO_I, 
+                                TETRIMINO_T, 
+                                TETRIMINO_L, 
+                                TETRIMINO_J, 
+                                TETRIMINO_S, 
+                                TETRIMINO_Z]
+            ;
+            
+            var gamestate = GAMESTATE_PAUSED, // game starts paused
+                // width/height of Game is in units of cells
+                width = CANVAS_PIXEL_WIDTH / CELL_PIXEL_WIDTH,
+                height = CANVAS_PIXEL_HEIGHT / CELL_PIXEL_HEIGHT,
+                cells = new Array(width * height),
+                // player object describes what cells it occupied (a cardinal x,y and shape (tetromino))
+                player = {x: NaN, y: NaN, shape: []}
+            ;
+            
+            function setXYoff(x, y) { cells[(y * width) + x] = CELL_STATE_OFF; }
+            function setXYon(x, y) { cells[(y * width) + x] = CELL_STATE_ON; }
+            function setXYp(x, y) { cells[(y * width) + x] = CELL_STATE_P; }
+            function isXYon(x, y) { return cells[(y * width) + x] == CELL_STATE_ON; }
+            function isXYp(x, y) { return cells[(y * width) + x] == CELL_STATE_P; }
+            
+            function randomTetrimino() {
+                return TETRIMINOS[Math.floor(Math.random()*TETRIMINOS.length)];
+            }
+            
+            function resetPlayer() {
+                player.x = PLAYER_STARTX;
+                player.y = PLAYER_STARTY;
+                player.shape = randomTetrimino();
+                for (var i in player.shape) {
+                    setXYp(player.x + player.shape[i][0], player.y + player.shape[i][1]);
+                }
+            }
+            
+            function cementPlayer() {
+                for (var i in player.shape) {
+                    setXYon(player.x + player.shape[i][0], player.y + player.shape[i][1]);
+                }
+            }
+            
+            function coordIsValid(x, y) {
+                return x >= 0 && x <= width - 1 && y >= 0 && y <= height - 1;
+            }
+            
+            function playerMoveIsValid(dX, dY) {                
+                for (var i in player.shape) {
+                    var x = player.x + player.shape[i][0] + dX,
+                        y = player.y + player.shape[i][1] + dY;
+                    if (!coordIsValid(x, y) || isXYon(x, y)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            
+            function movePlayer(dX, dY) {
+                for (var i in player.shape) {
+                    setXYoff(player.x + player.shape[i][0], player.y + player.shape[i][1]);
+                }
+                player.x += dX;
+                player.y += dY;
+                for (var i in player.shape) {
+                    setXYp(player.x + player.shape[i][0], player.y + player.shape[i][1]);
+                }
+            }
+            
+            function movePlayerDown() {                
+                if (playerMoveIsValid(0, 1)) {
+                    movePlayer(0, 1);
+                } else {
+                    cementPlayer();
+                    // do overlap (gameover) check
+                    resetPlayer();
+                }
+            }
 
-			(function() { // init
-				for (var i = 0; i < cells.length; i++) {
-					cells[i] = CELL_STATE_OFF;
-				}
-				resetPlayer();
-			})();
+            (function() { // init
+                for (var i = 0; i < cells.length; i++) {
+                    cells[i] = CELL_STATE_OFF;
+                }
+                resetPlayer();
+            })();
 
-			return {
-				width: function() {return width;},
-				height: function() {return height;},
+            return {
+                width: function() {return width;},
+                height: function() {return height;},
 
-				isXYon: function(x, y) {
-					return isXYon(x, y);
-				},
+                isXYon: function(x, y) {
+                    return isXYon(x, y);
+                },
 
-				isXYplayer: function(x, y) {
-					return isXYp(x, y);
-				},
+                isXYplayer: function(x, y) {
+                    return isXYp(x, y);
+                },
 
-				isPaused: function() {
-					return gamestate == GAMESTATE_PAUSED;
-				},
+                isPaused: function() {
+                    return gamestate == GAMESTATE_PAUSED;
+                },
 
-				pause: function() {
-					if (gamestate == GAMESTATE_PLAYING) {
-						gamestate = GAMESTATE_PAUSED;
-					} 
-				},
+                pause: function() {
+                    if (gamestate == GAMESTATE_PLAYING) {
+                        gamestate = GAMESTATE_PAUSED;
+                    } 
+                },
 
-				unpause: function() {
-					if (gamestate == GAMESTATE_PAUSED) {
-						gamestate = GAMESTATE_PLAYING;
-					} 
-				},
+                unpause: function() {
+                    if (gamestate == GAMESTATE_PAUSED) {
+                        gamestate = GAMESTATE_PLAYING;
+                    } 
+                },
 
-				tick: function() {
-					if (Game.isPaused()) return;
-					
-					movePlayerDown();
-					updateCanvas();
-				},
-				
-				playerAction_Left: function() {
-					if (Game.isPaused()) return;
-					
-					if (playerMoveIsValid(-1, 0)) {
-						movePlayer(-1, 0);
-						updateCanvas();
-					}
-				},
-				
-				playerAction_Right: function() {
-					if (Game.isPaused()) return;
-					
-					if (playerMoveIsValid(1, 0)) {
-						movePlayer(1, 0);
-						updateCanvas();
-					}
-				},
-				
-				playerAction_Down: function() {
-					if (Game.isPaused()) return;
-					
-					movePlayerDown();
-					updateCanvas();
-				}
-			};
-		})();
+                tick: function() {
+                    if (Game.isPaused()) return;
+                    
+                    movePlayerDown();
+                    updateCanvas();
+                },
+                
+                playerAction_Left: function() {
+                    if (Game.isPaused()) return;
+                    
+                    if (playerMoveIsValid(-1, 0)) {
+                        movePlayer(-1, 0);
+                        updateCanvas();
+                    }
+                },
+                
+                playerAction_Right: function() {
+                    if (Game.isPaused()) return;
+                    
+                    if (playerMoveIsValid(1, 0)) {
+                        movePlayer(1, 0);
+                        updateCanvas();
+                    }
+                },
+                
+                playerAction_Down: function() {
+                    if (Game.isPaused()) return;
+                    
+                    movePlayerDown();
+                    updateCanvas();
+                }
+            };
+        })();
 
-		function updateCanvas() {
-			var c = document.getElementById("c").getContext('2d');
-			for (var x = 0; x < Game.width(); x++) {
-				for (var y = 0; y < Game.height(); y++) {
-					if (Game.isXYon(x, y)) {
-						c.fillStyle = "#000000";
-						c.fillRect(x * CELL_PIXEL_WIDTH, y * CELL_PIXEL_HEIGHT, 
-								   CELL_PIXEL_WIDTH, CELL_PIXEL_HEIGHT);
-					} else if (Game.isXYplayer(x, y)) {
-						c.fillStyle = "#FF0000";
-						c.fillRect(x * CELL_PIXEL_WIDTH, y * CELL_PIXEL_HEIGHT, 
-								   CELL_PIXEL_WIDTH, CELL_PIXEL_HEIGHT);
-					} else {
-						c.clearRect(x * CELL_PIXEL_WIDTH, y * CELL_PIXEL_HEIGHT, 
-									CELL_PIXEL_WIDTH, CELL_PIXEL_HEIGHT);
-					}
-				}
-			}
-		}
-		
-		function gameloop() {
-			Game.tick();
-			setTimeout("gameloop()", GAMETICK_SPEED);
-		}
-		
-		function togglePause() {
-			if (Game.isPaused()) {
-				$('#control_pauseToggle').text('pause');
-				Game.unpause();
-			} else {
-				$('#control_pauseToggle').text('play');
-				Game.pause();
-			}
-		}
+        function updateCanvas() {
+            var c = document.getElementById("c").getContext('2d');
+            for (var x = 0; x < Game.width(); x++) {
+                for (var y = 0; y < Game.height(); y++) {
+                    if (Game.isXYon(x, y)) {
+                        c.fillStyle = "#000000";
+                        c.fillRect(x * CELL_PIXEL_WIDTH, y * CELL_PIXEL_HEIGHT, 
+                                   CELL_PIXEL_WIDTH, CELL_PIXEL_HEIGHT);
+                    } else if (Game.isXYplayer(x, y)) {
+                        c.fillStyle = "#FF0000";
+                        c.fillRect(x * CELL_PIXEL_WIDTH, y * CELL_PIXEL_HEIGHT, 
+                                   CELL_PIXEL_WIDTH, CELL_PIXEL_HEIGHT);
+                    } else {
+                        c.clearRect(x * CELL_PIXEL_WIDTH, y * CELL_PIXEL_HEIGHT, 
+                                    CELL_PIXEL_WIDTH, CELL_PIXEL_HEIGHT);
+                    }
+                }
+            }
+        }
+        
+        function gameloop() {
+            Game.tick();
+            setTimeout("gameloop()", GAMETICK_SPEED);
+        }
+        
+        function togglePause() {
+            if (Game.isPaused()) {
+                $('#control_pauseToggle').text('pause');
+                Game.unpause();
+            } else {
+                $('#control_pauseToggle').text('play');
+                Game.pause();
+            }
+        }
 
-		function handleKeypress(e) {
-			if (e.which == 115) {
-				Game.playerAction_Down();
-			}
-			if (e.which == 97) {
-				Game.playerAction_Left();
-			}
-			if (e.which == 100) {		
-				Game.playerAction_Right();
-			}		
-		}
+        function handleKeypress(e) {
+            if (e.which == 115) {
+                Game.playerAction_Down();
+            }
+            if (e.which == 97) {
+                Game.playerAction_Left();
+            }
+            if (e.which == 100) {        
+                Game.playerAction_Right();
+            }        
+        }
 
-		function init() {			
-			document.getElementById("c").width = CANVAS_PIXEL_WIDTH;
-			document.getElementById("c").height = CANVAS_PIXEL_HEIGHT;
-			$('body').keypress(handleKeypress);
-			$('#control_pauseToggle').text('start').click(togglePause);
-			gameloop();
-		}
+        function init() {            
+            document.getElementById("c").width = CANVAS_PIXEL_WIDTH;
+            document.getElementById("c").height = CANVAS_PIXEL_HEIGHT;
+            $('body').keypress(handleKeypress);
+            $('#control_pauseToggle').text('start').click(togglePause);
+            gameloop();
+        }
 
-		init();
-	</script>
+        init();
+    </script>
 </html>
