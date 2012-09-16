@@ -169,7 +169,6 @@
                     if (Game.isPaused()) return;
                     
                     movePlayerDown();
-                    updateCanvas();
                 },
                 
                 playerAction_Left: function() {
@@ -177,7 +176,6 @@
                     
                     if (playerMoveIsValid(-1, 0)) {
                         movePlayer(-1, 0);
-                        updateCanvas();
                     }
                 },
                 
@@ -186,7 +184,6 @@
                     
                     if (playerMoveIsValid(1, 0)) {
                         movePlayer(1, 0);
-                        updateCanvas();
                     }
                 },
                 
@@ -194,7 +191,6 @@
                     if (Game.isPaused()) return;
                     
                     movePlayerDown();
-                    updateCanvas();
                 }
             };
         })();
@@ -221,6 +217,7 @@
         
         function gameloop() {
             Game.tick();
+            updateCanvas();
             setTimeout("gameloop()", GAMETICK_SPEED);
         }
         
@@ -237,12 +234,15 @@
         function handleKeypress(e) {
             if (e.which == 115) {
                 Game.playerAction_Down();
+                updateCanvas();
             }
             if (e.which == 97) {
                 Game.playerAction_Left();
+                updateCanvas();
             }
             if (e.which == 100) {        
                 Game.playerAction_Right();
+                updateCanvas();
             }        
         }
 
