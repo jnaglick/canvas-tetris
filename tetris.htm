@@ -79,6 +79,16 @@
                 return TETRIMINOS[Math.floor(Math.random()*TETRIMINOS.length)];
             }
             
+            function updatePlayerPosition(updatePlayerCallback) {
+                for (var i in player.shape) {
+                    setXYoff(player.x + player.shape[i][0], player.y + player.shape[i][1]);
+                }
+                updatePlayerCallback();
+                for (var i in player.shape) {
+                    setXYp(player.x + player.shape[i][0], player.y + player.shape[i][1]);
+                }
+            }
+            
             function resetPlayer() {
                 player.x = PLAYER_STARTX;
                 player.y = PLAYER_STARTY;
@@ -110,14 +120,44 @@
             }
             
             function movePlayer(dX, dY) {
-                for (var i in player.shape) {
-                    setXYoff(player.x + player.shape[i][0], player.y + player.shape[i][1]);
+                updatePlayerPosition(function() {
+                    player.x += dX;
+                    player.y += dY;
+                });
+            }
+            
+            function getRotatedShape(shape) {
+                // starting row is greatest y in shape
+                var row = 0;
+                for (var i in shape) {
+                    if (shape[i][1] > row) row = shape[i][1];
                 }
-                player.x += dX;
-                player.y += dY;
-                for (var i in player.shape) {
-                    setXYp(player.x + player.shape[i][0], player.y + player.shape[i][1]);
+                // create new shape
+                var newshape = [];
+                for (col = 0; row >= 0; row-- && col++) {
+                    for (var i in shape) {
+                        if (row == shape[i][1]) newshape.push([col, shape[i][0]])
+                    }
                 }
+                return newshape;
+            }
+            
+            function rotatePlayerIsValid() {
+                var newshape = getRotatedShape(player.shape);
+                for (var i in newshape) {
+                    var x = player.x + newshape[i][0],
+                        y = player.y + newshape[i][1];
+                    if (!coordIsValid(x, y) || isXYon(x, y)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            
+            function rotatePlayer() {
+                updatePlayerPosition(function() {
+                    player.shape = getRotatedShape(player.shape);
+                });
             }
             
             function movePlayerDown() {                
@@ -191,6 +231,14 @@
                     if (Game.isPaused()) return;
                     
                     movePlayerDown();
+                },
+                
+                playerAction_Rotate: function() {
+                    if (Game.isPaused()) return;
+                    
+                    if (rotatePlayerIsValid()) {
+                        rotatePlayer();
+                    }
                 }
             };
         })();
@@ -243,7 +291,11 @@
             if (e.which == 100) {        
                 Game.playerAction_Right();
                 updateCanvas();
-            }        
+            }
+            if (e.which == 119) {
+                Game.playerAction_Rotate();
+                updateCanvas();
+            }
         }
 
         function init() {            
